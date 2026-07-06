@@ -5,8 +5,8 @@
 }
 
 body {
-  background-color: hsl(0, 0%, 0%);
-  color: #e6ad03;
+  background-color: lab(69.37% -43.5 40.67);
+  color: hsl(174, 84%, 42%);
   font-family: 'Inter', monospace;
   min-height: 100vh;
   display: flex;
@@ -26,7 +26,7 @@ h1 {
 }
 
 .subtitle {
-  color: hwb(0 100% 0% / 0.733);
+  color: hwb(0 0% 100%);
   margin-bottom: 32px;
   font-style: italic;
 }
@@ -39,9 +39,9 @@ form {
 }
 
 input {
-  background: hwb(42 0% 85%);
-  border: 1px solid hsl(32, 90%, 43%);
-  color: #f0ede4;
+  background: hwb(212 48% 22%);
+  border: 1px solid hsl(32, 68%, 46%);
+  color: #8a99b4;
   padding: 12px;
   font-family: inherit;
   font-size: 1rem;
@@ -50,12 +50,12 @@ input {
 
 input:focus {
   outline: none;
-  border-color: hwb(100 3% 27%);
+  border-color: hwb(41 24% 7%);
 }
 
 button {
-  background: #f0ede4;
-  color: #0d0d0d;
+  background: #ecd7e9;
+  color: #000000;
   border: none;
   padding: 12px;
   font-family: inherit;
@@ -69,8 +69,8 @@ button:hover {
 }
 
 .task {
-  background: #1a1a1a;
-  border: 1px solid #333;
+  background: #d9973b;
+  border: 1px solid #153202;
   border-radius: 4px;
   padding: 12px;
   margin-bottom: 8px;
@@ -82,13 +82,13 @@ button:hover {
 }
 
 .task-estimate {
-  color: #999;
+  color: #501c1c;
   font-size: 0.9rem;
 }
 
 .task-gap {
   font-weight: bold;
-  color: #e0a458;
+  color: lch(30.57% 35.56 113.68);
   margin-top: 4px;
 }
 

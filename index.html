@@ -3,25 +3,34 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Black Paper — The time manager</title>
+  <title>BLACK PAPER — The Time Manager</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
-    <h1>Black Paper</h1>
-    <p class="subtitle">The Estimation Gap — Get know how wrong you are</p>
+    <div class="top-row">
+      <h1>BLACK PAPER</h1>
+      <div class="data-controls">
+        <button type="button" id="export-btn" class="small-btn">Export</button>
+        <label for="import-input" class="small-btn">Import</label>
+        <input type="file" id="import-input" accept=".json" hidden>
+      </div>
+    </div>
+    <p class="subtitle">The Estimation Gap — Get Know How Wrong You Are!</p>
 
     <div id="stats"></div>
+    <div id="trend"></div>
+    <div id="weekly-check"></div>
 
     <form id="task-form">
-      <input type="text" id="task-name" placeholder="What are you about to do?" required>
+      <input type="text" id="task-name" placeholder="What Are Your About To Do" required>
       <select id="task-category">
         <option value="Study">Study</option>
-        <option value="tech">Tech</option>
+        <option value="tech.">Tech</option>
         <option value="Chores">Chores</option>
-        <option value="Skill">Skill</option>
+        <option value="Skills">Skill</option>
         <option value="Other">Other</option>
-        <option value="task category" selected>Select task category</option>
+        <option value="task category" selected disabled>Select task category</option>
       </select>
       <div class="estimate-row">
         <input type="number" id="task-estimate" placeholder="Estimated time" min="1" required>
@@ -31,10 +40,22 @@
           <option value="days">days</option>
         </select>
       </div>
+      <label class="field-label" for="task-dread">How much are you dreading this? (optional)</label>
+      <select id="task-dread">
+        <option value="" selected>Skip</option>
+        <option value="1">1 - don't mind it</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5 - dreading it</option>
+      </select>
+      <label class="field-label" for="task-target-date">When do you want to finish it? (optional)</label>
+      <input type="date" id="task-target-date">
       <p id="prediction"></p>
       <button type="submit">Start Task</button>
     </form>
 
+    <div id="day-total"></div>
     <div id="task-list"></div>
   </div>
 

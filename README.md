@@ -1,6 +1,6 @@
 # BLACK PAPER !!!
 
-Your Cool Task Time Manager
+**Get obsessed with what you dream and what you deside**
 
 
 ## The Problem

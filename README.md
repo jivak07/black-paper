@@ -1,4 +1,4 @@
-# BLACK PAPER!!!
+# BLACK PAPER !!!
 
 Your Cool Task Time Manager
 
@@ -16,20 +16,21 @@ I am not giving solution for distractions because distractions are everywhere an
 
 ## Solution
 
-Black Paper is solution of time management on tasks. Here we can write task and estimate time, it's automatically starts coutdown on task. once your tasks get done black paper shows your progress in percentage. With dream core style/UI.
+Black Paper is solution of time management on tasks. Here we can write task and estimate time, it's automatically starts timer on task. once your tasks get done black paper shows your progress in percentage. With dream core style/UI.
 
 
 ## Some core features of black paper
 
 - Dread rating and its insight
 - Weekly reality check + last week comparison
-- Estimated time gap insight (deadline tracking)
+- How much time less or extra you takes %
 - Live visible timer
 - Day total
 - Task categories
 - Minutes/hours/days units
 - Data export/import in JSON
 - How it works explainer for new users
+- Milestones (10/25/50/100)
 - 100% Data safe
 
 
@@ -44,7 +45,7 @@ Screenshot 3 :- <img width="1872" height="884" alt="BLACK PAPER — The Tasks Ti
 
 ## Tech Stack
 
-Test stack is only HTML, CSS, JS there is no backend and DB. Every data get saved on browsers local storage, so basically users data stays 100% safe / private.
+Tech stack is only HTML, CSS, JS there is no backend and DB. Every data get saved on browsers local storage, so basically users data stays 100% safe / private.
 
 
 ## How To Use

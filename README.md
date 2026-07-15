@@ -1,6 +1,6 @@
-# BLACK PAPER !!!
+# BLACK PAPER
 
-**Get obsessed with what you dream and what you deside**
+**Get obsessed with what you dream and what you deside!!!**
 
 
 ## The Problem

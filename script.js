@@ -13,6 +13,7 @@ const dayTotal = document.getElementById('day-total');
 const trendSection = document.getElementById('trend');
 const exportBtn = document.getElementById('export-btn');
 const importInput = document.getElementById('import-input');
+const cardBtn = document.getElementById('card-btn');
 
 const UNIT_TO_MINUTES = {
   'minutes': 1,
@@ -21,6 +22,28 @@ const UNIT_TO_MINUTES = {
 };
 
 const HISTORY_PAGE_SIZE = 10;
+const QUICK_WORDS = ['quick', 'just', 'simple', 'fast', 'easy'];
+
+const MOOD_MESSAGES = {
+  improving: [
+    'Your estimates are getting sharper.',
+    'Real progress. Keep logging.',
+    'The gap is closing.'
+  ],
+  worsening: [
+    'A rougher stretch. That happens.',
+    'Estimates drifted this week. Worth a look.',
+    'Still useful data, even on an off week.'
+  ],
+  stable: [
+    'Holding steady.',
+    'Consistent pattern so far.'
+  ],
+  new: [
+    'Just getting started.',
+    'Every task adds to the picture.'
+  ]
+};
 
 let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
 let showAllHistory = false;
@@ -60,8 +83,8 @@ function formatElapsed(ms) {
 
 function getCategoryList() {
   return Array.from(taskCategoryInput.options)
-    .map(function (opt) { return opt.value; })
-    .filter(function (v) { return v !== 'task category'; });
+    .map(opt => opt.value)
+    .filter(v => v !== 'task category');
 }
 
 function getUrgencyClass(targetDate) {
@@ -119,7 +142,7 @@ function calculateDreadInsight() {
   const lowDread = rated.filter(function (t) { return t.dread <= 2; });
 
   if (highDread.length < 2 || lowDread.length < 2) {
-    return null;
+    return { ready: false };
   }
 
   const avgRatio = function (list) {
@@ -133,10 +156,10 @@ function calculateDreadInsight() {
   const lowAvg = avgRatio(lowDread);
 
   if (highAvg <= lowAvg) {
-    return null;
+    return { ready: false };
   }
 
-  return Math.round((highAvg / lowAvg - 1) * 100);
+  return { ready: true, percent: Math.round((highAvg / lowAvg - 1) * 100) };
 }
 
 function calculateDistractionInsight() {
@@ -148,7 +171,7 @@ function calculateDistractionInsight() {
   const focused = rated.filter(function (t) { return t.tabSwitches === 0; });
 
   if (distracted.length < 2 || focused.length < 2) {
-    return null;
+    return { ready: false };
   }
 
   const avgRatio = function (list) {
@@ -162,10 +185,52 @@ function calculateDistractionInsight() {
   const focusedAvg = avgRatio(focused);
 
   if (distractedAvg <= focusedAvg) {
+    return { ready: false };
+  }
+
+  return { ready: true, percent: Math.round((distractedAvg / focusedAvg - 1) * 100) };
+}
+
+function calculateQuickTaskInsight() {
+  const quickTasks = tasks.filter(function (t) {
+    if (t.actualMinutes === undefined) {
+      return false;
+    }
+    const nameLower = t.name.toLowerCase();
+    return QUICK_WORDS.some(function (word) {
+      return nameLower.indexOf(word) !== -1;
+    });
+  });
+
+  if (quickTasks.length < 3) {
     return null;
   }
 
-  return Math.round((distractedAvg / focusedAvg - 1) * 100);
+  const avgRatio = quickTasks.reduce(function (sum, t) {
+    return sum + (t.actualMinutes / t.estimateMinutes);
+  }, 0) / quickTasks.length;
+
+  if (avgRatio <= 1.2) {
+    return null;
+  }
+
+  const overCount = quickTasks.filter(function (t) {
+    return t.actualMinutes > t.estimateMinutes;
+  }).length;
+
+  return { count: quickTasks.length, overCount: overCount };
+}
+
+function getSampleTask() {
+  const completed = tasks.filter(function (t) {
+    return t.actualMinutes !== undefined && t.estimateMinutes > 0;
+  });
+
+  if (completed.length === 0) {
+    return null;
+  }
+
+  return completed[completed.length - 1];
 }
 
 function getStartOfWeek(timestamp) {
@@ -196,13 +261,40 @@ function calculateWeeklyTrend() {
 
   const weekStarts = Object.keys(weekGroups).sort();
 
-  return weekStarts.map(function (ws) {
+  return weekStarts.map(ws => {
     const group = weekGroups[ws];
     return {
       weekStart: Number(ws),
       avgMultiplier: group.ratioSum / group.count
     };
   });
+}
+
+function getMood() {
+  const trend = calculateWeeklyTrend();
+
+  if (trend.length < 2) {
+    return 'new';
+  }
+
+  const latest = trend[trend.length - 1].avgMultiplier;
+  const previous = trend[trend.length - 2].avgMultiplier;
+
+  if (latest < previous - 0.1) {
+    return 'improving';
+  }
+
+  if (latest > previous + 0.1) {
+    return 'worsening';
+  }
+
+  return 'stable';
+}
+
+function getMoodMessage() {
+  const mood = getMood();
+  const options = MOOD_MESSAGES[mood];
+  return options[Math.floor(Math.random() * options.length)];
 }
 
 function renderStats() {
@@ -218,10 +310,12 @@ function renderStats() {
     ? 'On average, your tasks take ' + percent + '% longer than you plan.'
     : 'On average, your tasks take ' + percent + '% less time than you plan.';
 
-  const sampleEstimate = 30;
+  const sample = getSampleTask();
+  const sampleEstimate = sample ? sample.estimateMinutes : 30;
   const sampleActual = Math.round(sampleEstimate * multiplier);
 
-  let html = '<p class="stats-headline">' + headline + '</p>';
+  let html = '<p class="mood-line">' + getMoodMessage() + '</p>';
+  html += '<p class="stats-headline">' + headline + '</p>';
   html += '<p class="stats-example">Example: you estimate ' + formatTime(sampleEstimate) + ', it usually becomes ' + formatTime(sampleActual) + '.</p>';
 
   let categoryHtml = '';
@@ -262,16 +356,24 @@ function renderStats() {
     html += '<p class="stats-example">' + lateLine + '</p>';
   }
 
-  const dreadPercent = calculateDreadInsight();
+  const dreadInsight = calculateDreadInsight();
 
-  if (dreadPercent !== null) {
-    html += '<p class="stats-dread">Tasks you dread score ' + dreadPercent + '% worse than tasks you do not mind.</p>';
+  if (dreadInsight.ready) {
+    html += '<p class="stats-dread">Tasks you dread score ' + dreadInsight.percent + '% worse than tasks you do not mind.</p>';
+  } else {
+    html += '<p class="stats-locked">Rate a few more tasks (dreaded and easy) to unlock the dread insight.</p>';
   }
 
-  const distractionPercent = calculateDistractionInsight();
+  const distractionInsight = calculateDistractionInsight();
 
-  if (distractionPercent !== null) {
-    html += '<p class="stats-dread">Tasks where you left the tab 3+ times score ' + distractionPercent + '% worse than tasks with zero tab switches.</p>';
+  if (distractionInsight.ready) {
+    html += '<p class="stats-dread">Tasks where you left the tab 3+ times score ' + distractionInsight.percent + '% worse than tasks with zero tab switches.</p>';
+  }
+
+  const quickInsight = calculateQuickTaskInsight();
+
+  if (quickInsight !== null) {
+    html += '<p class="stats-irony">You\'ve called ' + quickInsight.count + ' tasks "quick" or "simple." ' + quickInsight.overCount + ' of them ran over.</p>';
   }
 
   stats.innerHTML = html;
@@ -333,6 +435,21 @@ function renderWeeklyCheck() {
     const bestPercent = Math.round((bestAvg - 1) * 100);
     const bestSign = bestPercent >= 0 ? '+' : '';
     html += '<p class="weekly-line-good">Most accurate: ' + bestCategory + ' (' + bestSign + bestPercent + '%)</p>';
+  }
+
+  const trend = calculateWeeklyTrend();
+
+  if (trend.length >= 2) {
+    const thisWeekTrend = trend[trend.length - 1];
+    const lastWeekTrend = trend[trend.length - 2];
+    const diff = Math.round((thisWeekTrend.avgMultiplier - lastWeekTrend.avgMultiplier) * 100);
+
+    if (Math.abs(diff) >= 5) {
+      const compareLine = diff < 0
+        ? 'That is better than last week, by ' + Math.abs(diff) + ' points.'
+        : 'That is worse than last week, by ' + diff + ' points.';
+      html += '<p class="weekly-line">' + compareLine + '</p>';
+    }
   }
 
   weeklyCheck.innerHTML = html;
@@ -593,6 +710,55 @@ function importData(event) {
   event.target.value = '';
 }
 
+function generateRealityCard() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 600;
+  canvas.height = 400;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = 'hsl(21, 73%, 53%)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = '#000000';
+  ctx.font = 'bold 40px sans-serif';
+  ctx.fillText('BLACK PAPER', 40, 70);
+
+  ctx.fillStyle = '#52200a';
+  ctx.font = '18px sans-serif';
+  ctx.fillText('My Reality Check', 40, 100);
+
+  const multiplier = calculateMultiplier(null);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 60px sans-serif';
+
+  if (multiplier === null) {
+    ctx.fillText('No data yet', 40, 200);
+  } else {
+    const percent = Math.round(Math.abs(multiplier - 1) * 100);
+    const label = multiplier >= 1 ? '+' + percent + '%' : '-' + percent + '%';
+    ctx.fillText(label, 40, 210);
+
+    ctx.fillStyle = '#52091a';
+    ctx.font = '20px sans-serif';
+    const voiceLine = multiplier >= 1 ? 'yeah! that is really how wrong I am' : 'cool, I am early sometimes';
+    ctx.fillText(voiceLine, 40, 245);
+  }
+
+  const completedCount = tasks.filter(function (t) {
+    return t.actualMinutes !== undefined;
+  }).length;
+
+  ctx.fillStyle = '#52200a';
+  ctx.font = '22px sans-serif';
+  ctx.fillText(completedCount + ' tasks logged', 40, 320);
+
+  const link = document.createElement('a');
+  link.download = 'black-paper-reality-card.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
 form.addEventListener('submit', function (e) {
   e.preventDefault();
 
@@ -678,6 +844,7 @@ taskCategoryInput.addEventListener('change', updatePrediction);
 taskUnitInput.addEventListener('change', updatePrediction);
 exportBtn.addEventListener('click', exportData);
 importInput.addEventListener('change', importData);
+cardBtn.addEventListener('click', generateRealityCard);
 
 renderTasks();
 renderStats();

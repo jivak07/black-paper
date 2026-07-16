@@ -11,12 +11,19 @@
     <div class="top-row">
       <h1>BLACK PAPER</h1>
       <div class="data-controls">
+        <button type="button" id="card-btn" class="small-btn">Card</button>
         <button type="button" id="export-btn" class="small-btn">Export</button>
         <label for="import-input" class="small-btn">Import</label>
         <input type="file" id="import-input" accept=".json" hidden>
       </div>
     </div>
     <p class="subtitle">The Estimation Gap — Get Know How Wrong You Are!</p>
+
+    <details class="how-it-works">
+      <summary>How this works</summary>
+      <p>Every time you start a task, a timer runs automatically in the background (also shows on task card). When you click Done, its shows average of you time you are taking on your tasks also week's reality check. where you are weak and which is your blind spots is shown in Week's Reality Check.</p>
+      <p>Start Task, Complete Task and get know your tasks time insight</p>
+    </details>
 
     <div id="stats"></div>
     <div id="trend"></div>
@@ -25,12 +32,12 @@
     <form id="task-form">
       <input type="text" id="task-name" placeholder="What Are Your About To Do" required>
       <select id="task-category">
+        <option value="task category" selected disabled>Select task category</option>
         <option value="Study">Study</option>
         <option value="tech.">Tech</option>
         <option value="Chores">Chores</option>
         <option value="Skills">Skill</option>
         <option value="Other">Other</option>
-        <option value="task category" selected disabled>Select task category</option>
       </select>
       <div class="estimate-row">
         <input type="number" id="task-estimate" placeholder="Estimated time" min="1" required>
